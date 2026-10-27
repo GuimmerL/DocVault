@@ -1,0 +1,18 @@
+# Gradle
+.gradle/
+**/build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# Signing and local secrets
+*.jks
+*.keystore
+keystore.properties
+
+# Generated/local data
+captures/
+.externalNativeBuild/
+.cxx/

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/sort_newest"
+        android:title="@string/sort_newest" />
+    <item
+        android:id="@+id/sort_oldest"
+        android:title="@string/sort_oldest" />
+    <item
+        android:id="@+id/sort_title_az"
+        android:title="@string/sort_title_az" />
+    <item
+        android:id="@+id/sort_title_za"
+        android:title="@string/sort_title_za" />
+    <item
+        android:id="@+id/sort_size_largest"
+        android:title="@string/sort_size_largest" />
+    <item
+        android:id="@+id/sort_size_smallest"
+        android:title="@string/sort_size_smallest" />
+</menu>

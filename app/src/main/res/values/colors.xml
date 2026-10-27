@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1E3A8A</color>
+    <color name="primary_dark">#0F172A</color>
+    <color name="primary_variant">#3B82F6</color>
+    <color name="on_primary">#FFFFFF</color>
+    
+    <color name="secondary">#0D9488</color>
+    <color name="on_secondary">#FFFFFF</color>
+    
+    <color name="background">#F8FAFC</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F1F5F9</color>
+    <color name="menu_button">#E5E7EB</color>
+    <color name="on_surface">#0F172A</color>
+    <color name="on_surface_muted">#64748B</color>
+    
+    <!-- Category Colors -->
+    <color name="cat_manual">#2563EB</color>
+    <color name="cat_manual_bg">#EFF6FF</color>
+    <color name="cat_datasheet">#059669</color>
+    <color name="cat_datasheet_bg">#ECFDF5</color>
+    <color name="cat_flyer">#D97706</color>
+    <color name="cat_flyer_bg">#FFFBEB</color>
+    <color name="cat_catalog">#7C3AED</color>
+    <color name="cat_catalog_bg">#F5F3FF</color>
+    <color name="cat_other">#475569</color>
+    <color name="cat_other_bg">#F1F5F9</color>
+
+    <color name="divider">#E2E8F0</color>
+    <color name="card_border">#CBD5E1</color>
+    <color name="red_error">#DC2626</color>
+</resources>

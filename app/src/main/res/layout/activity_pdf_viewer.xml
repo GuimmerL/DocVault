@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#333333">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarViewer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface"
+        app:elevation="4dp">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbarViewer"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingEnd="8dp">
+
+                <ImageView
+                    android:id="@+id/btnViewerBack"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Back"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/on_surface" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvViewerTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:singleLine="true"
+                        android:textColor="@color/on_surface"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="PNOZ s4 Safety Relay Manual" />
+
+                    <TextView
+                        android:id="@+id/tvViewerPageIndicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/on_surface_muted"
+                        android:textSize="12sp"
+                        tools:text="Page 1 of 32" />
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/btnViewerJumpPage"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Go to page"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_jump_page"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnViewerToc"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Table of contents"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_menu"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnViewerSearch"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Search in document"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_search"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnViewerMore"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="More document options"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnViewerShare"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="4dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Share via Email"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_share"
+                    app:tint="@color/primary" />
+            </LinearLayout>
+        </androidx.appcompat.widget.Toolbar>
+
+        <!-- In-Document Search Bar (collapsible) -->
+        <LinearLayout
+            android:id="@+id/layoutInDocSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
+
+                <EditText
+                    android:id="@+id/etInDocSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Find in this document…"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:textColor="@color/on_surface"
+                    android:textColorHint="@color/on_surface_muted"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvInDocMatchCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="6dp"
+                    android:textColor="@color/on_surface_muted"
+                    android:textSize="12sp"
+                    tools:text="3/12" />
+
+                <ImageView
+                    android:id="@+id/btnInDocPrev"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnInDocNext"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="@color/on_surface" />
+
+                <ImageView
+                    android:id="@+id/btnInDocClose"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_clear"
+                    app:tint="@color/on_surface_muted" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvInDocSnippetContext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/surface"
+                android:ellipsize="end"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="3"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
+                android:textColor="@color/on_surface"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="…operating voltage 24V DC (-15% / +20%), auxiliary supply connection via M12 8-pin connector…"
+                tools:visibility="visible" />
+        </LinearLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Document Pages RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPdfPages"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingVertical="8dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <!-- Loading Indicator -->
+    <ProgressBar
+        android:id="@+id/progressLoadingPdf"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

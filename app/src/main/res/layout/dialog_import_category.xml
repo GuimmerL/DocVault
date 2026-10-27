@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/dialog_import_title"
+        android:textColor="@color/primary"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvImportCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/on_surface_muted"
+        android:textSize="13sp"
+        tools:text="Importing 5 selected PDF documents into offline storage." />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/dialog_select_category"
+        android:textColor="@color/on_surface"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupImportCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp">
+
+        <RadioButton
+            android:id="@+id/radioImportManual"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:paddingVertical="4dp"
+            android:text="📘  Manual"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/radioImportDatasheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:text="📊  Datasheet"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/radioImportFlyer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:text="📄  Flyer"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/radioImportCatalog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:text="📚  Catalog"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/radioImportOther"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="4dp"
+            android:text="📁  Other"
+            android:textColor="@color/on_surface"
+            android:textSize="14sp" />
+    </RadioGroup>
+
+    <!-- Subfolder & Tag Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Subfolder &amp; Tag (optional):"
+        android:textColor="@color/on_surface"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etImportSubfolder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="e.g. One-Pager, Safety Relays"
+            android:inputType="textCapWords"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

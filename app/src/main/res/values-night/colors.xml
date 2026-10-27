@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#B8C7FF</color>
+    <color name="primary_dark">#0F172A</color>
+    <color name="primary_variant">#9AAFFF</color>
+    <color name="on_primary">#172B61</color>
+    <color name="secondary">#80D5C7</color>
+    <color name="on_secondary">#003731</color>
+    <color name="background">#111318</color>
+    <color name="surface">#1B1B20</color>
+    <color name="surface_variant">#44474F</color>
+    <color name="menu_button">#303038</color>
+    <color name="on_surface">#E5E1E9</color>
+    <color name="on_surface_muted">#C4C6D0</color>
+    <color name="divider">#45464D</color>
+    <color name="card_border">#5C5E66</color>
+    <color name="red_error">#FFB4AB</color>
+    <color name="cat_manual">#B8C7FF</color>
+    <color name="cat_manual_bg">#25304D</color>
+    <color name="cat_datasheet">#80D5C7</color>
+    <color name="cat_datasheet_bg">#123732</color>
+    <color name="cat_flyer">#FFB870</color>
+    <color name="cat_flyer_bg">#4A2800</color>
+    <color name="cat_catalog">#DDB8FF</color>
+    <color name="cat_catalog_bg">#38204F</color>
+    <color name="cat_other">#C4C6D0</color>
+    <color name="cat_other_bg">#292A30</color>
+</resources>

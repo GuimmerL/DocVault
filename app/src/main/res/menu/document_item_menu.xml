@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_edit_tags"
+        android:title="Tags &amp; Part Numbers" />
+    <item
+        android:id="@+id/action_change_category"
+        android:title="Change Category" />
+    <item
+        android:id="@+id/action_rename"
+        android:title="Rename Document" />
+    <item
+        android:id="@+id/action_open_external"
+        android:title="Open in External App" />
+    <item
+        android:id="@+id/action_delete"
+        android:title="Delete Document" />
+</menu>

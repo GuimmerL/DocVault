@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DocVault</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_browser">Web Browser</string>
+    <string name="nav_search">PDF Search</string>
+    
+    <string name="category_all">All</string>
+    <string name="category_manuals">Manuals</string>
+    <string name="category_datasheets">Datasheets</string>
+    <string name="category_flyers">Flyers</string>
+    <string name="category_catalogs">Catalogs</string>
+    <string name="category_other">Other</string>
+    
+    <string name="search_hint">Search title, filename, tags, part #…</string>
+    <string name="deep_search_hint">Search full text inside all offline PDFs…</string>
+    <string name="browser_search_hint">Enter URL or search…</string>
+    
+    <string name="btn_import">Import PDF</string>
+    <string name="btn_download">Download</string>
+    <string name="btn_view">View</string>
+    <string name="btn_share">Share</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_add_tag">+ Add Tag</string>
+    <string name="btn_add_category">+ Category</string>
+    
+    <string name="dialog_download_title">Save PDF to DocVault</string>
+    <string name="dialog_select_category">Select Category:</string>
+    <string name="dialog_doc_title">Document Title:</string>
+    <string name="dialog_import_title">Import PDF Documents</string>
+    
+    <string name="sort_newest">Newest Added</string>
+    <string name="sort_oldest">Oldest Added</string>
+    <string name="sort_title_az">Title (A to Z)</string>
+    <string name="sort_title_za">Title (Z to A)</string>
+    <string name="sort_size_largest">Size (Largest)</string>
+    <string name="sort_size_smallest">Size (Smallest)</string>
+    
+    <string name="empty_library">No offline documents found</string>
+    <string name="empty_library_sub">Download manuals from the Browser, tap Import to add PDFs, or copy files directly into the DocVault folder via USB.</string>
+</resources>
