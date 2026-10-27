@@ -306,7 +306,11 @@ class MainActivity : AppCompatActivity() {
                                     runOnUiThread {
                                         password.fill(0.toChar())
                                         if (success) {
-                                            Toast.makeText(this@MainActivity, "${category.name} encrypted", Toast.LENGTH_LONG).show()
+                                            MaterialAlertDialogBuilder(this@MainActivity)
+                                                .setTitle("Encrypted category created")
+                                                .setMessage("The files in ${category.name} are now encrypted. If you forget the password, the files cannot be recovered.")
+                                                .setPositiveButton("I understand", null)
+                                                .show()
                                             refreshDrawerCategories()
                                             libraryFragment.selectCategory(null)
                                         } else Toast.makeText(this@MainActivity, "Could not protect category", Toast.LENGTH_LONG).show()
