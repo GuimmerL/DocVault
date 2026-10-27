@@ -275,7 +275,14 @@ class MainActivity : AppCompatActivity() {
                         repo.setCategoryHidden(category.id, true)
                         refreshDrawerCategories()
                     }
-                    if (category.isPasswordProtected) {
+                    if (category.isPasswordProtected && repo.isCategoryUnlocked(category.id)) {
+                        addAction("Lock", 100) {
+                            repo.lockCategory(category.id)
+                            refreshDrawerCategories()
+                            libraryFragment.selectCategory(null)
+                            Toast.makeText(this@MainActivity, "${category.name} locked", Toast.LENGTH_SHORT).show()
+                        }
+                    } else if (category.isPasswordProtected) {
                         addAction("Unlock", 100) {
                             ProtectedCategoryDialog.showUnlock(this@MainActivity, category) { password ->
                                 lifecycleScope.launch(Dispatchers.IO) {
