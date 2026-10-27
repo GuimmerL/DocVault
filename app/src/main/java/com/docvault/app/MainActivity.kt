@@ -11,12 +11,14 @@ import android.content.res.ColorStateList
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.button.MaterialButton
 import com.docvault.app.DocVaultApp
 import com.docvault.app.model.Category
 import com.docvault.app.ui.dialogs.FolderViewDialog
 import com.docvault.app.ui.dialogs.ManageCategoriesDialog
+import com.docvault.app.ui.dialogs.ProtectedCategoryDialog
 import com.docvault.app.ui.dialogs.SettingsDialog
 import com.docvault.app.ui.library.DocumentAdapter
 import android.provider.Settings
@@ -26,6 +28,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.docvault.app.ui.browser.BrowserFragment
@@ -168,10 +173,27 @@ class MainActivity : AppCompatActivity() {
                 }
                 setPadding(12, 8, 8, 8)
                 if (!isHidden) setOnClickListener {
-                    selectedDrawerCategoryId = category.id
-                    libraryFragment.selectCategory(category.id)
-                    bottomNav.selectedItemId = R.id.nav_library
-                    drawer.closeDrawers()
+                    if (category.isPasswordProtected && !repo.isCategoryUnlocked(category.id)) {
+                        ProtectedCategoryDialog.showUnlock(this@MainActivity, category) { password ->
+                            lifecycleScope.launch(Dispatchers.IO) {
+                                val success = repo.unlockCategory(category.id, password)
+                                runOnUiThread {
+                                    password.fill(0.toChar())
+                                    if (success) {
+                                        selectedDrawerCategoryId = category.id
+                                        libraryFragment.selectCategory(category.id)
+                                        bottomNav.selectedItemId = R.id.nav_library
+                                        drawer.closeDrawers()
+                                    } else Toast.makeText(this@MainActivity, "Incorrect password", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    } else {
+                        selectedDrawerCategoryId = category.id
+                        libraryFragment.selectCategory(category.id)
+                        bottomNav.selectedItemId = R.id.nav_library
+                        drawer.closeDrawers()
+                    }
                 }
             }
             if (!categoryEditing) row.addView(label)
@@ -252,6 +274,39 @@ class MainActivity : AppCompatActivity() {
                     addAction("Hide", 92) {
                         repo.setCategoryHidden(category.id, true)
                         refreshDrawerCategories()
+                    }
+                    if (category.isPasswordProtected) {
+                        addAction("Unlock", 100) {
+                            ProtectedCategoryDialog.showUnlock(this@MainActivity, category) { password ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    val success = repo.unlockCategory(category.id, password)
+                                    runOnUiThread {
+                                        password.fill(0.toChar())
+                                        if (success) {
+                                            Toast.makeText(this@MainActivity, "${category.name} unlocked", Toast.LENGTH_SHORT).show()
+                                            refreshDrawerCategories()
+                                            libraryFragment.selectCategory(category.id)
+                                        } else Toast.makeText(this@MainActivity, "Incorrect password", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        addAction("Protect", 100) {
+                            ProtectedCategoryDialog.showProtect(this@MainActivity, category) { password ->
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    val success = repo.protectCategory(category.id, password)
+                                    runOnUiThread {
+                                        password.fill(0.toChar())
+                                        if (success) {
+                                            Toast.makeText(this@MainActivity, "${category.name} encrypted", Toast.LENGTH_LONG).show()
+                                            refreshDrawerCategories()
+                                            libraryFragment.selectCategory(null)
+                                        } else Toast.makeText(this@MainActivity, "Could not protect category", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        }
                     }
                     if (!category.isSystem) addAction("Delete", 100) {
                         MaterialAlertDialogBuilder(this).setTitle("Are you sure you want to delete '${category.name}'?")

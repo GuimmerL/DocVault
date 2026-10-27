@@ -3,10 +3,12 @@ package com.docvault.app.repository
 import android.content.Context
 import android.os.Environment
 import android.util.Log
+import android.util.Base64
 import com.docvault.app.model.Category
 import com.docvault.app.model.PdfDocument
 import com.docvault.app.model.SearchResult
 import com.docvault.app.utils.FileUtils
+import com.docvault.app.utils.EncryptedVaultStore
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.text.PDFTextStripper
 import kotlinx.coroutines.CoroutineScope
@@ -72,6 +74,9 @@ class DocumentRepository(private val context: Context) {
     private val indexCache = mutableMapOf<String, CachedIndex>()
     private val lock = Any()
     private val indexingScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val unlockedProtectedCategories = mutableSetOf<String>()
+    private val unlockedPasswords = mutableMapOf<String, CharArray>()
+    private val protectedRoot: File by lazy { File(context.filesDir, "protected_vault").apply { mkdirs() } }
 
     init {
         // Metadata is lightweight; defer the recursive filesystem scan until the UI is visible.
@@ -401,7 +406,7 @@ class DocumentRepository(private val context: Context) {
     // Document Management
     fun getAllDocuments(): List<PdfDocument> {
         synchronized(lock) {
-            return documentsList.toList()
+            return documentsList.filter { isDocumentVisible(it) }.toList()
         }
     }
 
@@ -411,7 +416,7 @@ class DocumentRepository(private val context: Context) {
         sortOrder: SortOrder = SortOrder.NEWEST
     ): List<PdfDocument> {
         synchronized(lock) {
-            var list = documentsList.toList()
+            var list = documentsList.filter { isDocumentVisible(it) }.toList()
 
             // Filter by category
             if (!categoryId.isNullOrBlank()) {
@@ -443,10 +448,101 @@ class DocumentRepository(private val context: Context) {
         }
     }
 
-    fun getFile(document: PdfDocument): File {
-        return File(rootVaultDir, document.relativePath)
+    fun isCategoryUnlocked(categoryId: String): Boolean = synchronized(lock) {
+        !getCategoryById(categoryId).let { it?.isPasswordProtected == true } || unlockedProtectedCategories.contains(categoryId)
     }
 
+    fun protectCategory(categoryId: String, password: CharArray): Boolean {
+        val category = getCategoryById(categoryId) ?: return false
+        if (category.isPasswordProtected || password.isEmpty()) return false
+        val salt = EncryptedVaultStore.newSalt()
+        val vaultDir = File(protectedRoot, categoryId).apply { mkdirs() }
+        val verifierPlain = File(cacheDir(), "${categoryId}_verify.bin").apply { writeText("DocVault protected category") }
+        val verifier = File(vaultDir, "_verifier.dv")
+        return try {
+            EncryptedVaultStore.encrypt(verifierPlain, verifier, password, salt)
+            verifierPlain.delete()
+            File(vaultDir, "_salt").writeText(Base64.encodeToString(salt, Base64.NO_WRAP))
+            val categoryDocs = synchronized(lock) { documentsList.filter { it.categoryId == categoryId && !it.relativePath.startsWith(".protected/") }.toList() }
+            val encryptedPairs = mutableListOf<Pair<PdfDocument, File>>()
+            for (doc in categoryDocs) {
+                val source = File(rootVaultDir, doc.relativePath)
+                if (!source.exists()) continue
+                val encrypted = File(vaultDir, "${doc.id}.dvpdf")
+                EncryptedVaultStore.encrypt(source, encrypted, password, salt)
+                encryptedPairs.add(doc to source)
+            }
+            for ((doc, source) in encryptedPairs) {
+                source.delete()
+                doc.relativePath = ".protected/$categoryId/${doc.id}.dvpdf"
+            }
+            category.isPasswordProtected = true
+            saveMetadata()
+            true
+        } catch (error: Exception) {
+            Log.e("DocumentRepository", "Unable to protect category", error)
+            false
+        }
+    }
+
+    fun unlockCategory(categoryId: String, password: CharArray): Boolean {
+        val category = getCategoryById(categoryId) ?: return false
+        if (!category.isPasswordProtected) return true
+        val vaultDir = File(protectedRoot, categoryId)
+        val saltFile = File(vaultDir, "_salt")
+        val verifier = File(vaultDir, "_verifier.dv")
+        if (!saltFile.exists() || !verifier.exists()) return false
+        val salt = try { Base64.decode(saltFile.readText(), Base64.NO_WRAP) } catch (_: Exception) { return false }
+        val plain = File(cacheDir(), "${categoryId}_verify.bin")
+        return try {
+            EncryptedVaultStore.decrypt(verifier, plain, password, salt)
+            val valid = plain.readText() == "DocVault protected category"
+            plain.delete()
+            if (valid) synchronized(lock) {
+                unlockedProtectedCategories.add(categoryId)
+                unlockedPasswords[categoryId] = password.copyOf()
+            }
+            valid
+        } catch (_: Exception) {
+            plain.delete()
+            false
+        }
+    }
+
+    fun lockCategory(categoryId: String) {
+        synchronized(lock) {
+            unlockedProtectedCategories.remove(categoryId)
+            unlockedPasswords.remove(categoryId)?.fill(0.toChar())
+        }
+        File(context.cacheDir, "protected_pdf/$categoryId").deleteRecursively()
+    }
+
+    private fun isDocumentVisible(document: PdfDocument): Boolean {
+        val category = categoriesList.firstOrNull { it.id == document.categoryId }
+        return category?.isPasswordProtected != true || unlockedProtectedCategories.contains(category.id)
+    }
+
+    private fun cacheDir(): File = File(context.cacheDir, "protected_verify").apply { mkdirs() }
+
+    fun getFile(document: PdfDocument): File {
+        val category = synchronized(lock) { categoriesList.firstOrNull { it.id == document.categoryId } }
+        if (category?.isPasswordProtected == true) {
+            val vaultDir = File(protectedRoot, category.id)
+            val encrypted = File(vaultDir, "${document.id}.dvpdf")
+            if (!unlockedProtectedCategories.contains(category.id)) return encrypted
+            val plain = File(context.cacheDir, "protected_pdf/${category.id}/${document.id}.pdf")
+            if (encrypted.exists() && (!plain.exists() || plain.lastModified() < encrypted.lastModified())) {
+                try {
+                    val salt = Base64.decode(File(vaultDir, "_salt").readText(), Base64.NO_WRAP)
+                    val password = synchronized(lock) { unlockedPasswords[category.id]?.copyOf() } ?: return encrypted
+                    EncryptedVaultStore.decrypt(encrypted, plain, password, salt)
+                    password.fill(0.toChar())
+                } catch (_: Exception) { return encrypted }
+            }
+            return if (plain.exists()) plain else encrypted
+        }
+        return File(rootVaultDir, document.relativePath)
+    }
     /**
      * Adds a document preserving its ORIGINAL filename and organizing into category/subfolder!
      */
