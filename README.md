@@ -1,6 +1,12 @@
-# DocVault
+<p align="center">
+  <img src="docs/docvault-app-icon.svg" alt="DocVault app icon" width="108" />
+</p>
 
-[![Buy Me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/ekqindmb4)
+<h1 align="center">DocVault</h1>
+
+<p align="center">
+  <a href="https://buymeacoffee.com/ekqindmb4"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me a Coffee" width="217" /></a>
+</p>
 
 If DocVault is useful, [buy me a coffee](https://buymeacoffee.com/ekqindmb4) to support development.
 
