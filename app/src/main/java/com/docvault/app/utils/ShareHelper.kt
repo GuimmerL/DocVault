@@ -34,7 +34,7 @@ object ShareHelper {
                             "• Category: ${document.categoryName}\n" +
                             "• File: ${document.filename} (${document.formattedFileSize})\n" +
                             (if (document.tags.isNotEmpty()) "• Tags: ${document.tags.joinToString(", ") { "#$it" }}\n\n" else "\n") +
-                            "Sent from DocVault Offline PDF Hub."
+                            "Sent from DocVault."
                 )
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }

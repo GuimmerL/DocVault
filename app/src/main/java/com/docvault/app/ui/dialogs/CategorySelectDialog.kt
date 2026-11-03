@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
+import android.widget.Toast
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.docvault.app.DocVaultApp
@@ -32,7 +33,13 @@ object CategorySelectDialog {
         tvInfo.text = "$suggestedFilename$sizeStr"
         etTitle.setText(suggestedTitle)
 
-        val categories = DocVaultApp.instance.repository.getCategories()
+        val categories = DocVaultApp.instance.repository.getCategories().filter { !it.isPasswordProtected }
+        if (categories.isEmpty()) {
+            MaterialAlertDialogBuilder(context).setTitle("No available categories")
+                .setMessage("Add an unprotected category before saving a PDF.")
+                .setPositiveButton("OK", null).show()
+            return
+        }
         radioGroup.removeAllViews()
 
         categories.forEachIndexed { index, cat ->
@@ -59,10 +66,10 @@ object CategorySelectDialog {
 
                 val checkedId = radioGroup.checkedRadioButtonId
                 val selectedIndex = if (checkedId >= 1000) checkedId - 1000 else 0
-                val selectedCategory = if (selectedIndex in categories.indices) {
-                    categories[selectedIndex]
-                } else {
-                    categories.first()
+                val selectedCategory = categories.getOrNull(selectedIndex) ?: categories.firstOrNull()
+                if (selectedCategory == null) {
+                    Toast.makeText(context, "Create or unlock an unprotected category first", Toast.LENGTH_LONG).show()
+                    return@setPositiveButton
                 }
 
                 val tags = if (subfolder.isNotBlank()) listOf(subfolder) else emptyList()

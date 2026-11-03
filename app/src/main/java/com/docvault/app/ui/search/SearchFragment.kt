@@ -80,6 +80,7 @@ class SearchFragment : Fragment() {
 
                 searchJob?.cancel()
                 if (query.isBlank()) {
+                    searchJob?.cancel()
                     adapter.submitList(emptyList())
                     tvStats.visibility = View.GONE
                     layoutEmptyState.visibility = View.VISIBLE
@@ -105,6 +106,7 @@ class SearchFragment : Fragment() {
         tvStats.visibility = View.GONE
 
         val results = DocVaultApp.instance.repository.searchFullText(query)
+        if (query != etSearch.text?.toString()?.trim()) return
         progressBar.visibility = View.GONE
         adapter.submitList(results)
 

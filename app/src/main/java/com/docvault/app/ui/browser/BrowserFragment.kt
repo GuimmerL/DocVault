@@ -203,7 +203,11 @@ class BrowserFragment : Fragment() {
 
     private fun navigateTo(input: String) {
         val url = when {
-            input.startsWith("http://", ignoreCase = true) || input.startsWith("https://", ignoreCase = true) -> input
+            input.startsWith("http://", ignoreCase = true) -> {
+                Toast.makeText(requireContext(), "Use an HTTPS link to protect your connection", Toast.LENGTH_LONG).show()
+                return
+            }
+            input.startsWith("https://", ignoreCase = true) -> input
             input.contains(".") && !input.contains(" ") -> "https://$input"
             else -> "https://www.google.com/search?q=" + Uri.encode(input)
         }
@@ -272,7 +276,6 @@ class BrowserFragment : Fragment() {
         settings.displayZoomControls = false
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
-        settings.databaseEnabled = true
         settings.setSupportZoom(true)
         settings.javaScriptCanOpenWindowsAutomatically = true
         // Enable multiple windows so target="_blank" and window.open on certain sites don't unload the main page!
@@ -462,6 +465,7 @@ class BrowserFragment : Fragment() {
                 try {
                     while (redirectCount < 8 && isActive) {
                         val targetUrl = URL(currentUrl)
+                        if (!targetUrl.protocol.equals("https", ignoreCase = true)) throw IOException("Secure HTTPS is required for PDF downloads")
                         conn = (targetUrl.openConnection() as HttpURLConnection).apply {
                             instanceFollowRedirects = false
                             connectTimeout = 20000
@@ -487,11 +491,8 @@ class BrowserFragment : Fragment() {
                             val location = conn.getHeaderField("Location")
                             conn.disconnect()
                             if (!location.isNullOrBlank()) {
-                                currentUrl = if (location.startsWith("http://") || location.startsWith("https://")) {
-                                    location
-                                } else {
-                                    URL(targetUrl, location).toString()
-                                }
+                                currentUrl = URL(targetUrl, location).toString()
+                                if (!URL(currentUrl).protocol.equals("https", ignoreCase = true)) throw IOException("Download redirect is not HTTPS")
                                 redirectCount++
                                 continue
                             }
@@ -577,6 +578,8 @@ class BrowserFragment : Fragment() {
                         )
                     }
 
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     errorMessage = e.message ?: "Download connection error"
                 } finally {

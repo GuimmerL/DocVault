@@ -28,8 +28,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerBack"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Back"
                     android:padding="6dp"
@@ -65,8 +65,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerJumpPage"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Go to page"
                     android:padding="6dp"
@@ -75,8 +75,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerToc"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Table of contents"
                     android:padding="6dp"
@@ -85,8 +85,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerSearch"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Search in document"
                     android:padding="6dp"
@@ -95,8 +95,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerMore"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="More document options"
                     android:padding="6dp"
@@ -105,8 +105,8 @@
 
                 <ImageView
                     android:id="@+id/btnViewerShare"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_marginStart="4dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="Share via Email"
@@ -158,8 +158,10 @@
 
                 <ImageView
                     android:id="@+id/btnInDocPrev"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="Previous search match"
+                    android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="6dp"
                     android:src="@drawable/ic_arrow_back"
@@ -167,8 +169,10 @@
 
                 <ImageView
                     android:id="@+id/btnInDocNext"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="Next search match"
+                    android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="6dp"
                     android:src="@drawable/ic_arrow_forward"
@@ -176,8 +180,10 @@
 
                 <ImageView
                     android:id="@+id/btnInDocClose"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="Close in-document search"
+                    android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:padding="6dp"
                     android:src="@drawable/ic_clear"

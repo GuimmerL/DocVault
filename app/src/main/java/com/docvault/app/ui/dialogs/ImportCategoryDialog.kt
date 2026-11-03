@@ -27,7 +27,7 @@ object ImportCategoryDialog {
         val fileWord = if (fileCount == 1) "file" else "files"
         tvCount.text = "Importing $fileCount PDF $fileWord into DocVault folder. Select category destination:"
 
-        val categories = DocVaultApp.instance.repository.getCategories()
+        val categories = DocVaultApp.instance.repository.getCategories().filter { !it.isPasswordProtected }
         radioGroup.removeAllViews()
 
         categories.forEachIndexed { index, cat ->
@@ -49,11 +49,8 @@ object ImportCategoryDialog {
             .setPositiveButton("Import") { dialog, _ ->
                 val checkedId = radioGroup.checkedRadioButtonId
                 val selectedIndex = if (checkedId >= 2000) checkedId - 2000 else 0
-                val selectedCategory = if (selectedIndex in categories.indices) {
-                    categories[selectedIndex]
-                } else {
-                    categories.first()
-                }
+                val selectedCategory = categories.getOrNull(selectedIndex)
+                    ?: run { dialog.dismiss(); return@setPositiveButton }
                 val subfolder = etSubfolder.text?.toString()?.trim().orEmpty()
 
                 dialog.dismiss()

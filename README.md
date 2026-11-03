@@ -23,20 +23,19 @@ DocVault is an Android app for keeping, organizing, and searching PDF manuals an
 
 ## Get DocVault
 
-See [GitHub Releases](https://github.com/GuimmerL/DocVault/releases) for available builds. The current `v1.18.1` APK is a **debug/test build**, not a production-signed release. It has been retained unchanged and was not rebuilt after the source cleanup; its UI and app icon may differ from the current source.
+See [GitHub Releases](https://github.com/GuimmerL/DocVault/releases) for available builds. The current `v1.18.1` APK is an old **debug/test build**, not a production-signed release. It predates source cleanup and does not match the current source. Do not install it if you need the current privacy/security changes; a new debug prerelease is planned after verification.
 
 ## Build from source
 
 Requirements:
 
-- Android Studio with Android SDK Platform 36 installed
+- Android Studio with Android SDK Platform 36 and Extension 19 installed
 - JDK 17
-- Android Gradle Plugin 8.10.1 and a compatible Gradle 8.11.1+ installation
 
-There is no Gradle wrapper in this repository. Open the project directory in Android Studio and sync Gradle, or with a compatible Gradle installation run:
+Use the included Gradle wrapper:
 
 ```bash
-gradle assembleDebug
+./gradlew testDebugUnitTest assembleDebug
 ```
 
 The debug APK is produced at `app/build/outputs/apk/debug/app-debug.apk`.
@@ -47,12 +46,12 @@ DocVault is local-first: it has no account, app-operated cloud sync, or server c
 
 - The in-app browser loads websites, and a plain-text search entered there is sent to Google. Website operators may receive the requests, cookies, and other normal browser data needed to load or download content.
 - PDFs downloaded from a website are stored locally. Importing or sharing a PDF may expose it to the selected file provider or receiving app.
-- By default, the library stores PDFs under `Documents/DocVault` when available. The app also saves a metadata file there; it can contain document names, titles, tags, source URLs, and short text excerpts. Extracted page-text indexes are stored in the app's private storage.
-- Android's manifest requests broad storage access (`MANAGE_EXTERNAL_STORAGE`), enables app-data backup, and permits cleartext traffic. Android may require special all-files-access approval. HTTP pages or downloads are not encrypted in transit; use HTTPS. Review these settings before distributing through an app store or handling sensitive material.
+- The working library and metadata are stored in app-private storage. Choose a folder through the Android folder picker to import PDFs from it or export unprotected PDFs back to it; no broad all-files access is requested. The selected folder provider has access to the items you choose to import/export.
+- App-data backup is disabled. Browser traffic uses HTTPS; plain HTTP URLs and PDF-download redirects to HTTP are refused. Website operators still receive the requests and normal browser data needed to load content.
 
 ### Password-protected categories
 
-Protected-category PDF files are encrypted using a key derived with PBKDF2-HMAC-SHA-256 and AES-256-GCM. This does **not** encrypt every related item: document metadata and some extracted text may remain outside the encrypted PDF files, and PDFs are decrypted into the app cache while a category is unlocked. Android backup behavior may also affect private app data. Choose a strong, unique password and keep a separate backup; forgotten passwords cannot recover the files. This feature is not a substitute for full-device encryption or a security-reviewed vault.
+Protected-category PDFs, category metadata, and extracted search indexes are encrypted with AES-256-GCM using a PBKDF2-HMAC-SHA-256-derived key. Decrypted PDFs are held temporarily in the app cache while unlocked; the cache is cleared on lock, app restart, or when the app is sent to the background. Locking on background can interrupt viewing. Choose a strong, unique password and keep a separate backup; forgotten passwords cannot recover the files. This feature is not a substitute for full-device encryption or a security-reviewed vault. Explicitly exporting a PDF sends a copy to the selected destination; protected categories are excluded from folder export.
 
 ## License and document rights
 
