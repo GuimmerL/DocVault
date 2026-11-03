@@ -63,13 +63,19 @@
                 android:textColorHint="@color/on_surface_muted"
                 android:textSize="14sp" />
 
-            <ImageView
-                android:id="@+id/btnClearDeepSearch"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_clear"
-                android:visibility="gone"
-                app:tint="@color/on_surface_muted" />
+            <FrameLayout
+                android:layout_width="48dp"
+                android:layout_height="48dp">
+                <ImageView
+                    android:id="@+id/btnClearDeepSearch"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="Clear full-text search"
+                    android:src="@drawable/ic_clear"
+                    android:visibility="gone"
+                    app:tint="@color/on_surface_muted" />
+            </FrameLayout>
         </LinearLayout>
 
         <TextView

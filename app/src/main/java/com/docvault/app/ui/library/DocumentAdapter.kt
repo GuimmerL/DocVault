@@ -3,10 +3,12 @@ package com.docvault.app.ui.library
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
@@ -48,6 +50,25 @@ class DocumentAdapter(
     enum class ViewMode { LIST, COMPACT, THUMBNAIL }
     private var viewMode = ViewMode.LIST
 
+    fun clearSensitiveThumbnails() {
+        thumbnailScope.coroutineContext.cancelChildren()
+        for (index in 0 until itemCount) {
+            val holder = (recyclerViewForSensitiveClear?.findViewHolderForAdapterPosition(index) as? DocumentViewHolder)
+            holder?.clearThumbnail()
+        }
+        notifyItemRangeChanged(0, itemCount)
+    }
+
+    private var recyclerViewForSensitiveClear: RecyclerView? = null
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        recyclerViewForSensitiveClear = recyclerView
+    }
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        if (recyclerViewForSensitiveClear === recyclerView) recyclerViewForSensitiveClear = null
+        super.onDetachedFromRecyclerView(recyclerView)
+    }
+
     fun setViewMode(mode: ViewMode) {
         viewMode = mode
         notifyItemRangeChanged(0, itemCount)
@@ -76,6 +97,11 @@ class DocumentAdapter(
         private val btnView: MaterialButton = itemView.findViewById(R.id.btnView)
         private val btnShare: MaterialButton = itemView.findViewById(R.id.btnShare)
 
+        fun clearThumbnail() {
+            (thumbnail.drawable as? BitmapDrawable)?.bitmap?.eraseColor(Color.TRANSPARENT)
+            thumbnail.setImageResource(R.drawable.ic_library)
+        }
+
         fun bind(doc: PdfDocument) {
             val context = itemView.context
             val repo = DocVaultApp.instance.repository
@@ -96,9 +122,10 @@ class DocumentAdapter(
             btnShare.visibility = if (compactMode || thumbnailMode) View.GONE else View.VISIBLE
             if (!compactMode) {
                 thumbnail.setImageResource(R.drawable.ic_library)
-                val file = repo.getFile(doc)
-                val cacheFile = File(itemView.context.cacheDir, "docvault_thumbnails/${doc.id}_${doc.lastIndexedModified}_${doc.fileSize}.png")
+                val protectedDocument = repo.getCategoryById(doc.categoryId)?.isPasswordProtected == true
+                val cacheFile = if (protectedDocument) null else File(itemView.context.cacheDir, "docvault_thumbnails/${doc.id}_${doc.lastIndexedModified}_${doc.fileSize}.png")
                 thumbnailScope.launch {
+                    val file = repo.getReadableFile(doc) ?: return@launch
                     renderThumbnail(file, cacheFile)?.let { bitmap ->
                         if (bindingAdapterPosition != RecyclerView.NO_POSITION && getItem(bindingAdapterPosition).id == doc.id) {
                             thumbnail.setImageBitmap(bitmap)
@@ -141,8 +168,7 @@ class DocumentAdapter(
                 val chip = Chip(context).apply {
                     text = "#$tag"
                     textSize = 11f
-                    setEnsureMinTouchTargetSize(false)
-                    chipMinHeight = 24f
+                    contentDescription = "Edit tag $tag for ${doc.title}"
                     setOnClickListener { onEditTagsClick(doc) }
                 }
                 chipGroupTags.addView(chip)
@@ -152,8 +178,7 @@ class DocumentAdapter(
             val addTagChip = Chip(context).apply {
                 text = "+ Tag"
                 textSize = 10f
-                setEnsureMinTouchTargetSize(false)
-                chipMinHeight = 22f
+                contentDescription = "Add tag to ${doc.title}"
                 setOnClickListener { onEditTagsClick(doc) }
             }
             chipGroupTags.addView(addTagChip)
@@ -195,8 +220,8 @@ class DocumentAdapter(
         }
     }
 
-    private suspend fun renderThumbnail(file: File, cacheFile: File): Bitmap? = withContext(Dispatchers.IO) {
-        if (cacheFile.exists()) return@withContext BitmapFactory.decodeFile(cacheFile.absolutePath)
+    private suspend fun renderThumbnail(file: File, cacheFile: File?): Bitmap? = withContext(Dispatchers.IO) {
+        if (cacheFile?.exists() == true) return@withContext BitmapFactory.decodeFile(cacheFile.absolutePath)
         if (!file.exists()) return@withContext null
         try {
             ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
@@ -208,8 +233,10 @@ class DocumentAdapter(
                         Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).also { bitmap ->
                             bitmap.eraseColor(Color.WHITE)
                             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                            cacheFile.parentFile?.mkdirs()
-                            cacheFile.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 90, out) }
+                            cacheFile?.let { cached ->
+                                cached.parentFile?.mkdirs()
+                                cached.outputStream().use { out -> bitmap.compress(Bitmap.CompressFormat.PNG, 90, out) }
+                            }
                         }
                     }
                 }
@@ -226,7 +253,7 @@ class DocumentAdapter(
             }
 
             override fun areContentsTheSame(oldItem: PdfDocument, newItem: PdfDocument): Boolean {
-                return oldItem == newItem && oldItem.tags == newItem.tags
+                return oldItem.copy(tags = oldItem.tags.toMutableList()) == newItem.copy(tags = newItem.tags.toMutableList())
             }
         }
     }

@@ -11,9 +11,9 @@ android {
     defaultConfig {
         applicationId "com.docvault.app"
         minSdk 28
-        targetSdk 34
-        versionCode 31
-        versionName "1.18.1"
+        targetSdk 36
+        versionCode 32
+        versionName "1.18.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -45,6 +45,7 @@ android {
 
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.documentfile:documentfile:1.0.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
@@ -55,4 +56,6 @@ dependencies {
     implementation 'androidx.fragment:fragment-ktx:1.8.2'
     implementation 'androidx.pdf:pdf-viewer-fragment:1.0.0-beta01'
     implementation 'com.tom-roush:pdfbox-android:2.0.27.0'
+
+    testImplementation 'junit:junit:4.13.2'
 }

@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.ext.SdkExtensions
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -25,8 +27,7 @@ class OfficialPdfViewerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_official_pdf_viewer)
         documentId = intent.getStringExtra(EXTRA_DOC_ID)
         val document = documentId?.let { DocVaultApp.instance.repository.getDocumentById(it) }
-        val file = document?.let { DocVaultApp.instance.repository.getFile(it) }
-        if (document == null || file == null || !file.exists()) {
+        if (document == null) {
             Toast.makeText(this, "Document file not found", Toast.LENGTH_SHORT).show()
             finish()
             return
@@ -38,6 +39,18 @@ class OfficialPdfViewerActivity : AppCompatActivity() {
             openLegacyViewer()
             return
         }
+        lifecycleScope.launch {
+            val file = DocVaultApp.instance.repository.getReadableFile(document)
+            if (file == null || !file.exists()) {
+                Toast.makeText(this@OfficialPdfViewerActivity, "Unlock the category or select the document again", Toast.LENGTH_SHORT).show()
+                finish()
+                return@launch
+            }
+            openDocument(document, file)
+        }
+    }
+
+    private fun openDocument(document: com.docvault.app.model.PdfDocument, file: java.io.File) {
         val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
         val loadHandler = Handler(Looper.getMainLooper())
         var loadFinished = false

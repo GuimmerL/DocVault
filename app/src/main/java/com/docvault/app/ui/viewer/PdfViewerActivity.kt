@@ -81,18 +81,23 @@ class PdfViewerActivity : AppCompatActivity() {
         if (docId != null) {
             currentDocument = DocVaultApp.instance.repository.getDocumentById(docId)
             currentDocument?.let { doc ->
-                currentFile = DocVaultApp.instance.repository.getFile(doc)
                 tvTitle.text = doc.title
+                lifecycleScope.launch {
+                    currentFile = DocVaultApp.instance.repository.getReadableFile(doc)
+                    val file = currentFile
+                    if (file == null || !file.exists()) {
+                        Toast.makeText(this@PdfViewerActivity, "Unlock the category or select the document again", Toast.LENGTH_SHORT).show()
+                        finish()
+                    } else openPdfRenderer(initialPage)
+                }
             }
         }
 
-        if (currentFile == null || !currentFile!!.exists()) {
+        if (currentDocument == null) {
             Toast.makeText(this, "Document file not found", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
-
-        openPdfRenderer(initialPage)
     }
 
     private fun initViews() {

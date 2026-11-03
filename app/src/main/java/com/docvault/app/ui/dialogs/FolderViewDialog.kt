@@ -31,7 +31,7 @@ object FolderViewDialog {
                 if (directory != previousDirectory) {
                     previousDirectory = directory
                     list.addView(TextView(context).apply {
-                        text = if (directory.isBlank()) "DocVault/" else "DocVault/$directory/"
+                        text = if (directory.isBlank()) "Private vault/" else "Private vault/$directory/"
                         textSize = 14f
                         setTypeface(typeface, Typeface.BOLD)
                         setPadding(0, 14, 0, 5)
@@ -46,7 +46,7 @@ object FolderViewDialog {
             }
         }
         MaterialAlertDialogBuilder(context)
-            .setTitle("Folder view")
+            .setTitle("Private vault folders")
             .setView(ScrollView(context).apply { addView(list) })
             .setNegativeButton("Close", null)
             .show()

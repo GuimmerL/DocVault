@@ -39,5 +39,5 @@
     <string name="sort_size_smallest">Size (Smallest)</string>
     
     <string name="empty_library">No offline documents found</string>
-    <string name="empty_library_sub">Download manuals from the Browser, tap Import to add PDFs, or copy files directly into the DocVault folder via USB.</string>
+    <string name="empty_library_sub">Download PDFs in the Browser, import them with the file picker, or use the Vault folder action to import/export with a folder you select.</string>
 </resources>

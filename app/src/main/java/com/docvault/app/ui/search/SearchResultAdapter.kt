@@ -6,6 +6,7 @@ import android.graphics.drawable.GradientDrawable
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.BackgroundColorSpan
+import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
@@ -74,6 +75,12 @@ class SearchResultAdapter(
                 val endIndex = startIndex + q.length
                 spannable.setSpan(
                     BackgroundColorSpan(0xFFFFEB3B.toInt()), // Bright yellow highlight
+                    startIndex,
+                    endIndex,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                spannable.setSpan(
+                    ForegroundColorSpan(0xFF111318.toInt()),
                     startIndex,
                     endIndex,
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE

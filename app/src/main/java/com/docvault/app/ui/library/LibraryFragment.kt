@@ -142,15 +142,21 @@ class LibraryFragment : Fragment() {
         adapter = DocumentAdapter(
             onViewClick = { doc -> openViewer(doc) },
             onShareClick = { doc ->
-                val file = DocVaultApp.instance.repository.getFile(doc)
-                ShareHelper.shareDocument(requireContext(), doc, file)
+                lifecycleScope.launch {
+                    val file = DocVaultApp.instance.repository.getReadableFile(doc)
+                    if (file == null) Toast.makeText(requireContext(), "Unlock this category first", Toast.LENGTH_SHORT).show()
+                    else ShareHelper.shareDocument(requireContext(), doc, file)
+                }
             },
             onEditTagsClick = { doc -> showEditTagsDialog(doc) },
             onChangeCategoryClick = { doc -> showChangeCategoryDialog(doc) },
             onRenameClick = { doc -> showRenameDialog(doc) },
             onOpenExternalClick = { doc ->
-                val file = DocVaultApp.instance.repository.getFile(doc)
-                ShareHelper.openExternal(requireContext(), file)
+                lifecycleScope.launch {
+                    val file = DocVaultApp.instance.repository.getReadableFile(doc)
+                    if (file == null) Toast.makeText(requireContext(), "Unlock this category first", Toast.LENGTH_SHORT).show()
+                    else ShareHelper.openExternal(requireContext(), file)
+                }
             },
             onDeleteClick = { doc -> showDeleteConfirmation(doc) }
         )
@@ -304,6 +310,18 @@ class LibraryFragment : Fragment() {
         }
     }
 
+    fun clearSensitiveThumbnails() {
+        if (::adapter.isInitialized) adapter.clearSensitiveThumbnails()
+        if (::rvDocuments.isInitialized) loadDocuments()
+    }
+
+    fun refreshDocuments() {
+        if (::rvDocuments.isInitialized) {
+            buildCategoryChips()
+            loadDocuments()
+        }
+    }
+
     private fun loadDocuments() {
         val repo = DocVaultApp.instance.repository
         val docs = repo.getDocuments(selectedCategoryId, currentQuery, currentSortOrder)
@@ -348,8 +366,10 @@ class LibraryFragment : Fragment() {
 
             lifecycleScope.launch {
                 var importedCount = 0
+                val failures = mutableListOf<String>()
                 withContext(Dispatchers.IO) {
                     for (uri in uris) {
+                        var currentName = "PDF"
                         try {
                             val contentResolver = context.contentResolver
                             var originalName = "imported_document.pdf"
@@ -359,6 +379,7 @@ class LibraryFragment : Fragment() {
                                     val nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                                     if (nameIndex >= 0) {
                                         originalName = cursor.getString(nameIndex)
+                                        currentName = originalName
                                     }
                                 }
                             }
@@ -377,12 +398,17 @@ class LibraryFragment : Fragment() {
                                 importedCount++
                             }
                         } catch (e: Exception) {
-                            // Continue with other files
+                            failures.add("$currentName: ${e.message ?: "Import failed"}")
                         }
                     }
                 }
 
-                Toast.makeText(context, "Successfully imported $importedCount document(s)", Toast.LENGTH_SHORT).show()
+                val summary = if (failures.isEmpty()) "Imported $importedCount of ${uris.size} PDF(s)" else "Imported $importedCount of ${uris.size}; ${failures.size} failed"
+                if (isAdded) MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Import complete")
+                    .setMessage((listOf(summary) + failures.take(8)).joinToString("\n"))
+                    .setPositiveButton("OK", null)
+                    .show()
                 loadDocuments()
             }
         }
@@ -408,7 +434,10 @@ class LibraryFragment : Fragment() {
     }
 
     private fun showChangeCategoryDialog(doc: PdfDocument) {
-        val categories = DocVaultApp.instance.repository.getCategories()
+        val categories = DocVaultApp.instance.repository.getCategories().filter {
+            !it.isPasswordProtected || DocVaultApp.instance.repository.isCategoryUnlocked(it.id)
+        }
+        if (categories.isEmpty()) return
         val items = categories.map { "${it.icon}  ${it.name}" }.toTypedArray()
         val currentIndex = categories.indexOfFirst { it.id == doc.categoryId }.let { if (it >= 0) it else 0 }
 

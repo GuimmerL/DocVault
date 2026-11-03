@@ -1,12 +1,7 @@
 package com.docvault.app
 
-import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.content.res.ColorStateList
 import android.view.View
 import android.widget.LinearLayout
@@ -16,21 +11,19 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.button.MaterialButton
 import com.docvault.app.DocVaultApp
 import com.docvault.app.model.Category
-import com.docvault.app.ui.dialogs.FolderViewDialog
 import com.docvault.app.ui.dialogs.ManageCategoriesDialog
 import com.docvault.app.ui.dialogs.ProtectedCategoryDialog
 import com.docvault.app.ui.dialogs.SettingsDialog
 import com.docvault.app.ui.library.DocumentAdapter
-import android.provider.Settings
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.docvault.app.ui.browser.BrowserFragment
@@ -44,6 +37,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawerCategoryList: LinearLayout
     private var categoryEditing = false
     private var selectedDrawerCategoryId: String? = null
+    private val vaultTreePicker = registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            try { contentResolver.takePersistableUriPermission(uri, flags) } catch (_: SecurityException) { }
+            getSharedPreferences("docvault_settings", 0).edit().putString("vault_tree_uri", uri.toString()).apply()
+            Toast.makeText(this, "Vault folder selected. Use the file picker to import PDFs.", Toast.LENGTH_LONG).show()
+        }
+    }
     private val libraryFragment = LibraryFragment()
     private val browserFragment = BrowserFragment()
     private val searchFragment = SearchFragment()
@@ -103,7 +104,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        checkStoragePermissions()
     }
 
     fun openDrawer() {
@@ -127,15 +127,39 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.drawerAddCategory).setOnClickListener {
             ManageCategoriesDialog.showAddCategoryDialog(this) { refreshDrawerCategories() }
         }
-        findViewById<MaterialButton>(R.id.drawerFolderView).setOnClickListener {
-            FolderViewDialog.show(this)
-        }
         findViewById<MaterialButton>(R.id.drawerSettings).setOnClickListener {
             drawer.closeDrawers()
             SettingsDialog.show(this, libraryFragment.getViewMode(), { mode -> libraryFragment.setViewMode(mode) }) {
                 refreshDrawerCategories()
                 libraryFragment.selectCategory(null)
             }
+        }
+        findViewById<MaterialButton>(R.id.drawerFolderView).setOnClickListener {
+            val hasFolder = getSharedPreferences("docvault_settings", 0).contains("vault_tree_uri")
+            val choices = if (hasFolder) arrayOf("Import PDFs from selected folder", "Export PDFs to selected folder", "Change selected folder") else arrayOf("Choose a folder")
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Vault folder")
+                .setItems(choices) { _, which ->
+                    when {
+                        !hasFolder -> vaultTreePicker.launch(null)
+                        which == 0 -> lifecycleScope.launch {
+                            val count = withContext(Dispatchers.IO) { DocVaultApp.instance.repository.importFromSelectedVaultFolder() }
+                            Toast.makeText(this@MainActivity, "Imported $count PDF(s). Protected categories must be unlocked once to migrate their protected files.", Toast.LENGTH_LONG).show()
+                            libraryFragment.refreshDocuments()
+                        }
+                        which == 1 -> lifecycleScope.launch {
+                            try {
+                                val count = DocVaultApp.instance.repository.exportToSelectedTree()
+                                Toast.makeText(this@MainActivity, "Exported $count PDF(s)", Toast.LENGTH_LONG).show()
+                            } catch (e: Exception) {
+                                Toast.makeText(this@MainActivity, "Export failed: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        else -> vaultTreePicker.launch(null)
+                    }
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
         }
         findViewById<MaterialButton>(R.id.drawerClose).setOnClickListener { drawer.closeDrawers() }
         refreshDrawerCategories()
@@ -279,6 +303,7 @@ class MainActivity : AppCompatActivity() {
                         addAction("Lock", 100) {
                             repo.lockCategory(category.id)
                             refreshDrawerCategories()
+                            libraryFragment.clearSensitiveThumbnails()
                             libraryFragment.selectCategory(null)
                             Toast.makeText(this@MainActivity, "${category.name} locked", Toast.LENGTH_SHORT).show()
                         }
@@ -350,38 +375,6 @@ class MainActivity : AppCompatActivity() {
         if (::drawerCategoryList.isInitialized) refreshDrawerCategories()
     }
 
-    private fun checkStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("Persistent Storage")
-                    .setMessage("To keep your PDF documents and tags safe across app uninstalls and allow transferring the 'DocVault' folder over USB, please allow file management access.")
-                    .setPositiveButton("Grant Access") { _, _ ->
-                        try {
-                            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                                data = Uri.parse("package:$packageName")
-                            }
-                            startActivity(intent)
-                        } catch (e: Exception) {
-                            val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                            startActivity(intent)
-                        }
-                    }
-                    .setNegativeButton("Later", null)
-                    .show()
-            }
-        } else {
-            val readPerm = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            val writePerm = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            if (readPerm != PackageManager.PERMISSION_GRANTED || writePerm != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    1001
-                )
-            }
-        }
-    }
 
     private fun switchFragment(target: Fragment) {
         if (activeFragment != target) {
