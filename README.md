@@ -1,5 +1,9 @@
 # DocVault
 
+[![Buy Me a Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/ekqindmb4)
+
+If DocVault is useful, [buy me a coffee](https://buymeacoffee.com/ekqindmb4) to support development.
+
 DocVault is an Android app for keeping, organizing, and searching PDF manuals and other reference documents on your device. Import PDFs or download them in the built-in browser, then browse and search your local library offline.
 
 ## Features
